@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+model Parking {
+  id          Int     @id @unique @default(autoincrement())
+  parkingName String  @unique
+  Floor       Floor[]
+}
+
+model Floor {
+  id        Int     @id
+  slots     Slot[]
+  parking   Parking? @relation(fields: [parkingId], references: [id])
+  parkingId Int
+}
+
+model Slot {
+  id             String         @id @default(uuid())
+  slotNumber     Int
+  free           Boolean       @default(true)
+  floor          Floor         @relation(fields: [floorId], references: [id])
+  floorId        Int
+  vehiculeType   Type_Vehicule? @relation(fields: [vehiculeTypeId], references: [name])
+  vehiculeTypeId String
+  Ticket         Ticket?
+}
+
+model Vehicule {
+  id Int @id @unique @default(autoincrement())
+  licenseNumber String  @unique 
+  color         String
+  Ticket        Ticket?
+}
+
+model Type_Vehicule {
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  picture String @default("https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg")
+  Slot    Slot[]
+}
+
+model Ticket {
+  id Int @default(autoincrement()) @id
+  ticket String @unique
+  entryTime  DateTime @default(now())
+  exitTime   DateTime
+  status     String   @default("active")
+  slot       Slot     @relation(fields: [slotId], references: [id])
+  slotId     String      @unique
+  vehicule   Vehicule @relation(fields: [vehiculeId], references: [licenseNumber])
+  vehiculeId String   @unique
+}
